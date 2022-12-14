@@ -1,21 +1,28 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"net"
 )
 
 func main() {
-	// following the path, choose a handler
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":5678", nil))
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	// code|message|payload(need to encode)
-	responseBody := "{\"code\":\"200\",\"message\":\"ok\"}"
-	_, err := w.Write([]byte(responseBody))
+	// default enter, analysis path and choose an available handler
+	laddr := &net.TCPAddr{
+		IP:   nil,
+		Port: 9890,
+	}
+	tcpListener, err := net.ListenTCP("tcp4", laddr)
 	if err != nil {
 		return
 	}
+	for {
+		tcpConn, err := tcpListener.AcceptTCP()
+		if err != nil {
+			return
+		}
+		go handlerConnection(tcpConn)
+	}
+}
+
+func handlerConnection(listener *net.TCPConn) {
+
 }
