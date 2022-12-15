@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
 	"net"
-	"time"
+	"server/handler"
 )
 
 func main() {
@@ -17,20 +16,18 @@ func main() {
 		return
 	}
 	for {
-		tcpConn, err := tcpListener.AcceptTCP()
+		conn, err := tcpListener.Accept()
 		if err != nil {
 			return
 		}
-		tcpConn.SetKeepAlive(true)
-		tcpConn.SetKeepAlivePeriod(time.Minute * 5)
-		tcpConn.SetLinger(10)
-		go handlerConnection(tcpConn)
+		go handler.Handle(conn)
+		//tcpConn, err := tcpListener.AcceptTCP()
+		//if err != nil {
+		//	return
+		//}
+		//tcpConn.SetKeepAlive(true)
+		//tcpConn.SetKeepAlivePeriod(time.Minute * 5)
+		//tcpConn.SetLinger(10)
+		//go handler.HandleConnection(tcpConn)
 	}
-}
-
-func handlerConnection(tcpConn *net.TCPConn) {
-	fmt.Println("success")
-	// 1.Verify Login
-	// 2.Process Request
-	// 3.Exit
 }
