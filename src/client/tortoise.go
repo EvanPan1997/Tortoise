@@ -1,15 +1,11 @@
 package main
 
 import (
-	"errors"
+	"client/utils"
 	"flag"
 	"fmt"
 	"net"
 	"os"
-	"reflect"
-	"strconv"
-	"strings"
-	"unsafe"
 )
 
 func main() {
@@ -51,54 +47,29 @@ func main() {
 		fmt.Println("The length of password is too low")
 		os.Exit(-1)
 	}
-	// Create Dail To Login-创建Tcp连接并登录
-	ip, err := stringToIP(host)
-	if err != nil {
-		return
-	}
-	raddr := net.TCPAddr{IP: ip, Port: port}
-	tcpConn, err := net.DialTCP("tcp4", nil, &raddr)
+
+	raddr := net.TCPAddr{IP: net.ParseIP(host), Port: port}
+	tcpConn, err := net.DialTCP("tcp", nil, &raddr)
 	if err != nil {
 		fmt.Println(err.Error())
 		os.Exit(-1)
 	}
 
-	_, err = tcpConn.Write(stringToBytes("hello"))
+	_, err = tcpConn.Write(utils.StringToBytes("hello"))
 	if err != nil {
-		return
+		fmt.Println(err.Error())
+		fmt.Println("Login Connection Failed")
+		os.Exit(-1)
 	}
 	// Cycling and Receiving Commands-循环接收指令
+
 }
 
-func stringToIP(host string) (net.IP, error) {
-	section := strings.Split(host, ".")
-	if len(section) != 4 {
-		return nil, errors.New("host format error:" + host)
-	}
-	a, err := strconv.Atoi(section[0])
-	if err != nil {
-		return nil, err
-	}
-	b, err := strconv.Atoi(section[1])
-	if err != nil {
-		return nil, err
-	}
-	c, err := strconv.Atoi(section[2])
-	if err != nil {
-		return nil, err
-	}
-	d, err := strconv.Atoi(section[3])
-	if err != nil {
-		return nil, err
-	}
-	return net.IPv4(byte(a), byte(b), byte(c), byte(d)), nil
-}
-
-func stringToBytes(s string) (b []byte) {
-	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh.Data = sh.Data
-	bh.Len = sh.Len
-	bh.Cap = sh.Len
-	return b
-}
+//func stringToBytes(s string) (b []byte) {
+//	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
+//	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
+//	bh.Data = sh.Data
+//	bh.Len = sh.Len
+//	bh.Cap = sh.Len
+//	return b
+//}
