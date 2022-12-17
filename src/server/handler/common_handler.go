@@ -1,28 +1,44 @@
 package handler
 
 import (
-	"fmt"
+	"bufio"
+	"log"
 	"net"
+	"strconv"
+	//"server/utils"
+	//"strconv"
 )
 
-func HandleConnection(tcpConn net.TCPConn) {
-	// 1.Verify Login
-	// 2.Process Request
-	// 3.Exit
-}
-
-func Handle(conn net.Conn) {
-	//log.Println(conn.RemoteAddr())
-	//log.Println(conn.LocalAddr())
-	defer conn.Close()
+func HandleConnection(tcpConn *net.TCPConn) {
+	remoteAddr := tcpConn.RemoteAddr()
+	defer tcpConn.Close()
+	writer := bufio.NewWriter(tcpConn)
 
 	for {
 		data := make([]byte, 2048)
-		_, err := conn.Read(data)
+		//bufio.NewReader(tcpConn)
+		n, err := tcpConn.Read(data)
+		if err != nil {
+			log.Printf("remoteAddr=%s, error=%s\n", remoteAddr, err.Error())
+			tcpConn.Write([]byte("Error"))
+			break
+		}
+		log.Printf("remoteAddr=%s, data=%s\n", remoteAddr, string(data))
+
+		_, err = writer.WriteString("Receive " + strconv.Itoa(n) + " bytes")
 		if err != nil {
 			return
 		}
-		fmt.Println(string(data))
+		err = writer.Flush()
+		if err != nil {
+			return
+		}
+		//output := "Receive " + strconv.Itoa(n) + " bytes"
+		//_, err = tcpConn.Write(data)
+		//if err != nil {
+		//	log.Printf("remoteAddr=%s, error=%s\n", remoteAddr, err.Error())
+		//	continue
+		//}
+		log.Println("Write To Client")
 	}
-
 }

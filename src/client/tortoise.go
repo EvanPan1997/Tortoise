@@ -4,8 +4,10 @@ import (
 	"client/utils"
 	"flag"
 	"fmt"
+	"log"
 	"net"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -55,21 +57,41 @@ func main() {
 		os.Exit(-1)
 	}
 
-	_, err = tcpConn.Write(utils.StringToBytes("hello"))
-	if err != nil {
-		fmt.Println(err.Error())
-		fmt.Println("Login Connection Failed")
-		os.Exit(-1)
-	}
+	var input string
 	// Cycling and Receiving Commands-循环接收指令
+	for {
+		fmt.Printf(">")
+		_, inputErr := fmt.Scanf("%s", &input)
+		if inputErr != nil {
+			log.Fatalln(inputErr)
+			//os.Exit(100)
+		}
+
+		input = strings.TrimSpace(input)
+		// 排除空串
+		if input != "" {
+			transportToServer(tcpConn, input)
+		}
+	}
 
 }
 
-//func stringToBytes(s string) (b []byte) {
-//	bh := (*reflect.SliceHeader)(unsafe.Pointer(&b))
-//	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-//	bh.Data = sh.Data
-//	bh.Len = sh.Len
-//	bh.Cap = sh.Len
-//	return b
-//}
+func transportToServer(tcpConn *net.TCPConn, input string) {
+	// 发送请求
+	_, err := tcpConn.Write(utils.StringToBytes(input))
+	if err != nil {
+		os.Exit(101)
+	}
+	// 接收返回
+	output := make([]byte, 2048)
+	//reader := bufio.NewReader(tcpConn)
+	//n, err := reader.Read(output)
+	//if err != nil {
+	//	return
+	//}
+	n, err := tcpConn.Read(output)
+	if err != nil {
+		os.Exit(102)
+	}
+	fmt.Printf("Receive %d, data=%s\n", n, string(output))
+}

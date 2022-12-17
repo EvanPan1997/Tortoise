@@ -16,11 +16,14 @@ func main() {
 		return
 	}
 	for {
-		conn, err := tcpListener.Accept()
+		//conn, err := tcpListener.Accept()
+		conn, err := tcpListener.AcceptTCP()
 		if err != nil {
 			return
 		}
-		go handler.Handle(conn)
+		//go handler.Handle(conn)
+		go handler.HandleConnection(conn)
+
 		//tcpConn, err := tcpListener.AcceptTCP()
 		//if err != nil {
 		//	return
